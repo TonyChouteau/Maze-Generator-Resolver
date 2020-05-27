@@ -8,7 +8,8 @@ const HEIGHT = 50;
 // Random & Speed
 const RAND_DIG = 0.8;
 const RAND_KEEP = 0.9;
-const SPEED = 20;
+const SPEED = 60;
+const SPEED_MULTIPLIER = 5;
 
 // States
 const GENERATING = 0,RESOLVING = 1, END = 2, ERROR = 3;
@@ -262,7 +263,6 @@ function generate(){
 	if (current.length == 0){
 		console.log("Done");
 		state = RESOLVING;
-		frameRate(SPEED*5);
 		//downloadObjectAsJson(board, "export");
 		//downloadObjectAsText("fafzagaazg", "export");
 	}
@@ -308,44 +308,50 @@ function alreadyGone(list, x, y){
 }
 
 function resolve(){
-	if (!alreadyGone(previous, player.x, player.y)){
-		previous.push({
-			"x": player.x,
-			"y": player.y
-		});
-		board[player.y][player.x] = 2;
-	}
+	
+	let i=0;
+	while (i<SPEED_MULTIPLIER && state == RESOLVING ){
+		if (!alreadyGone(previous, player.x, player.y)){
+			previous.push({
+				"x": player.x,
+				"y": player.y
+			});
+			board[player.y][player.x] = 2;
+		}
 
-	if (board[player.y-1][player.x] != 0 && !alreadyGone(previous, player.x, player.y-1)) {
-		player.y -= 1
-	} else if (board[player.y+1][player.x] != 0 && !alreadyGone(previous, player.x, player.y+1)) {
-		player.y += 1
-	} else if (board[player.y][player.x-1] != 0 && !alreadyGone(previous, player.x-1, player.y)) {
-		player.x -= 1
-	} else if (board[player.y][player.x+1] != 0 && !alreadyGone(previous, player.x+1, player.y)) {
-		player.x += 1
-	} else {
-		closed.push({
-			"x": player.x,
-			"y": player.y
-		});
-		board[player.y][player.x] = 3;
-		if (board[player.y-1][player.x] != 0 && !alreadyGone(closed, player.x, player.y-1)) {
+		if (board[player.y-1][player.x] != 0 && !alreadyGone(previous, player.x, player.y-1)) {
 			player.y -= 1
-		} else if (board[player.y+1][player.x] != 0 && !alreadyGone(closed, player.x, player.y+1)) {
+		} else if (board[player.y+1][player.x] != 0 && !alreadyGone(previous, player.x, player.y+1)) {
 			player.y += 1
-		} else if (board[player.y][player.x-1] != 0 && !alreadyGone(closed, player.x-1, player.y)) {
+		} else if (board[player.y][player.x-1] != 0 && !alreadyGone(previous, player.x-1, player.y)) {
 			player.x -= 1
-		} else if (board[player.y][player.x+1] != 0 && !alreadyGone(closed, player.x+1, player.y)) {
+		} else if (board[player.y][player.x+1] != 0 && !alreadyGone(previous, player.x+1, player.y)) {
 			player.x += 1
 		} else {
-			console.log("ERROR")
-			state = ERROR;
+			closed.push({
+				"x": player.x,
+				"y": player.y
+			});
+			board[player.y][player.x] = 3;
+			if (board[player.y-1][player.x] != 0 && !alreadyGone(closed, player.x, player.y-1)) {
+				player.y -= 1
+			} else if (board[player.y+1][player.x] != 0 && !alreadyGone(closed, player.x, player.y+1)) {
+				player.y += 1
+			} else if (board[player.y][player.x-1] != 0 && !alreadyGone(closed, player.x-1, player.y)) {
+				player.x -= 1
+			} else if (board[player.y][player.x+1] != 0 && !alreadyGone(closed, player.x+1, player.y)) {
+				player.x += 1
+			} else {
+				console.log("ERROR")
+				state = ERROR;
+			}
 		}
-	}
 
-	if (player.x == end.x && player.y == end.y){
-		state = END;
+		if (player.x == end.x && player.y == end.y){
+			state = END;
+		}
+
+		i++;
 	}
 }
 
